@@ -167,13 +167,8 @@ Input string
 ## 🧪 Testing
 
 ```bash
-# Memory leak check (parent process)
-valgrind --child-silent-after-fork=yes \
-         --suppressions=supp.supp \
-         --leak-check=full \
-         --show-leak-kinds=all \
-         --track-fds=yes \
-         ./minishell
+# Memory leak check
+valgrind ./minishell
 
 # Norm check
 norminette src/ include/
