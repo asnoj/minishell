@@ -1,195 +1,200 @@
-# 🐚 minishell
+*This project has been created as part of the 42 curriculum by aronnet & jcrochet.*
 
-A lightweight shell implementation written in C, inspired by bash. Developed as part of the 42 school curriculum.
+<div align="center">
 
-**Authors:** aronnet & jcrochet
+<h1>🐚 MINISHELL</h1>
+
+**A lightweight Unix shell written in C — inspired by bash**
+
+[![42 School](https://img.shields.io/badge/42-School-000000?style=flat-square&logo=42)](https://42lehavre.fr)
+[![Language](https://img.shields.io/badge/Language-C-blue?style=flat-square&logo=c)](https://en.wikipedia.org/wiki/C_(programming_language))
+[![Norm](https://img.shields.io/badge/Norm-v3-brightgreen?style=flat-square)](https://github.com/42School/norminette)
+
+</div>
 
 ---
 
-## About
+## 📖 Description
 
-Minishell is a simplified Unix shell that replicates core bash functionality. The project deepens understanding of processes, file descriptors, signal handling, and parsing — the building blocks of any command-line interpreter.
+**minishell** is a 42 School project that reimplements a subset of the bash shell from scratch. It covers the full pipeline of a real shell: lexical analysis, parsing, expansion, execution, and signal handling — with a working interactive prompt powered by GNU Readline.
+
+The project was built in pair programming and deepens understanding of processes, file descriptors, inter-process communication, and the POSIX signal API.
 
 ---
 
-## Features
+## ✨ Features
 
-### Command Execution
-- Execution of commands using `PATH` resolution or absolute/relative paths
-- Support for command arguments and options
-- Proper error handling for unknown commands
+### Execution
+- Command resolution via `PATH`, absolute, and relative paths
+- Full argument and option support
+- Proper exit code propagation (`$?`)
 
 ### Redirections
-- Input redirection: `< file`
-- Output redirection: `> file`
-- Append redirection: `>> file`
-- Here-document: `<< DELIMITER` with environment variable expansion inside heredoc content
+| Operator | Behavior |
+|---|---|
+| `< file` | Redirect stdin from file |
+| `> file` | Redirect stdout to file (truncate) |
+| `>> file` | Redirect stdout to file (append) |
+| `<< DELIM` | Heredoc — read until delimiter, with `$VAR` expansion |
 
 ### Pipes
-- Pipeline support: `cmd1 | cmd2 | cmd3 ...`
-- Unlimited chaining of pipes
-- Proper file descriptor management across pipeline stages
+- Unlimited pipeline chaining: `cmd1 | cmd2 | cmd3 | ...`
+- Correct file descriptor duplication and cleanup at each stage
 
-### Environment Variables
-- Variable expansion with `$VARIABLE`
-- Exit status expansion with `$?`
-- Proper handling of quotes and variable expansion rules
-
-### Quoting
-- Single quotes: preserve literal value of all characters
-- Double quotes: preserve literal value except for `$` (variable expansion)
+### Quoting & Expansion
+- Single quotes `'...'` — literal, no expansion
+- Double quotes `"..."` — expansion of `$VAR` and `$?`
 - Mixed and nested quote handling
-
-### Signals
-- `ctrl-C`: displays a new prompt on a new line
-- `ctrl-D`: exits the shell
-- `ctrl-\`: does nothing (in interactive mode)
-- Proper signal handling in child processes and heredocs
+- `$VARIABLE` and `$?` expansion in all contexts
 
 ### Built-in Commands
-- `echo` with `-n` option
-- `cd` with relative or absolute path
-- `pwd` — print working directory
-- `export` — set environment variables
-- `unset` — remove environment variables
-- `env` — display environment
-- `exit` — exit the shell with optional status code
+| Command | Description |
+|---|---|
+| `echo [-n]` | Print arguments, `-n` suppresses trailing newline |
+| `cd [path]` | Change directory (relative or absolute) |
+| `pwd` | Print current working directory |
+| `export [VAR=value]` | Set or display environment variables |
+| `unset VAR` | Remove an environment variable |
+| `env` | Display all exported environment variables |
+| `exit [code]` | Exit the shell with optional status code |
 
-### Bonus Features
-- **Logical operators:** `&&` and `||` with proper short-circuit evaluation
-- **Wildcard expansion:** `*` pattern matching in the current directory
+### Signals
+| Signal | Interactive mode | Child process |
+|---|---|---|
+| `Ctrl-C` | New prompt on new line | Terminates child |
+| `Ctrl-D` | Exits the shell | — |
+| `Ctrl-\` | No effect | Terminates child |
+
+### Bonus
+- **Logical operators** — `&&` and `||` with correct short-circuit evaluation
+- **Wildcard expansion** — `*` glob matching against the current directory
 
 ---
 
-## Getting Started
+## 🚀 Usage
 
-### Prerequisites
-- GCC or Clang compiler
-- GNU Make
-- GNU Readline library
-
-### Installation
+**Prerequisites:** `gcc`, `make`, GNU Readline (`libreadline-dev`)
 
 ```bash
-git clone <repository-url> minishell
+git clone https://github.com/<your-username>/minishell.git
 cd minishell
 make
-```
-
-### Usage
-
-```bash
 ./minishell
 ```
-
-You will be greeted with the minishell prompt:
-
-```
-minishell>
-```
-
-### Examples
 
 ```bash
 minishell> echo "Hello, World!"
 Hello, World!
 
-minishell> ls -la | grep minishell | wc -l
-3
+minishell> ls -la | grep ".c" | wc -l
+42
 
-minishell> cat << EOF > output.txt
-here_doc> Hello from heredoc
-here_doc> $USER is here
-here_doc> EOF
-
-minishell> ls && echo "success" || echo "failure"
-Makefile  minishell  src  include  libft
-success
-
-minishell> echo test*.c
-test1.c test2.c test3.c
+minishell> cat << EOF > out.txt
+heredoc> Hello $USER
+heredoc> EOF
 
 minishell> export MY_VAR="42 is the answer"
 minishell> echo $MY_VAR
 42 is the answer
+
+minishell> ls *.c
+main.c utils.c tokenizer.c
+
+minishell> make && echo "ok" || echo "failed"
+ok
 ```
 
 ---
 
-## Architecture
+## 🏗️ Architecture
 
 ```
 minishell/
 ├── include/
-│   └── minishell.h
-├── libft/
-├── src/
-│   ├── builtins/
-│   │   ├── echo.c                    # echo builtin
-│   │   ├── for_env.c / for_env_2.c   # env builtin
-│   │   ├── for_export.c              # export builtin
-│   │   ├── ft_unset.c                # unset builtin
-│   │   ├── fuction_for_cd.c / cd2.c  # cd builtin
-│   │   ├── function_command_utils.c   # builtin helpers
-│   │   └── other_command.c            # command dispatch
-│   ├── execution/
-│   │   ├── child.c / child2.c        # process creation & pipes
-│   │   ├── choose_cmd.c / _2.c       # command type routing
-│   │   ├── from_pipex.c / _2.c / _3.c # execve & PATH resolution
-│   ├── main_utils/
-│   │   ├── main.c                     # entry point & main loop
-│   │   ├── main_utils1.c / 2.c       # helper functions
-│   │   ├── exit.c / exit_utils.c / _2.c # exit handling
-│   │   ├── verif_cmd.c / _2.c / _3.c # command verification & dispatch
-│   ├── parsing/
-│   │   ├── tokenizer.c               # lexical analysis
-│   │   ├── tokenizer_utils.c / 2 / 3 / 4 # tokenizer helpers
-│   │   ├── token_cmd.c / 2 / 2_2 / 3 # command structure building
-│   │   ├── token_cmd_utils.c          # token helpers
-│   │   ├── expand.c / expand_utils.c  # variable expansion ($VAR, $?)
-│   │   ├── fill_all_tokens.c          # token population
-│   │   ├── free_one_redirect.c        # redirect cleanup
-│   │   └── syntax.c                   # syntax validation
-│   ├── redirections/
-│   │   ├── collect_heredoc.c          # heredoc input collection
-│   │   ├── here_doc.c / _utils.c / _norm.c # heredoc management
-│   │   ├── heredoc_expand.c           # $VAR expansion in heredocs
-│   │   ├── in_match.c / _utils.c      # wildcard matching (bonus)
-│   ├── signals/
-│   │   ├── signal.c                   # interactive & parent signals
-│   │   └── signal_2.c                 # child & heredoc signals
-│   └── utils/
-│       ├── clean_exit.c               # clean process exit
-│       ├── split_modif.c              # custom split
-│       ├── sturct_utils.c             # token/redirect constructors
-│       └── utils.c / utils_2.c        # general helpers
-└── Makefile
+│   └── minishell.h              # Global structs, enums, prototypes
+├── libft/                       # 42 standard library
+└── src/
+    ├── builtins/                # echo, cd, pwd, export, unset, env, exit
+    ├── execution/               # Process creation, pipes, execve, PATH resolution
+    ├── main_utils/              # Main loop, prompt, command dispatch
+    ├── parsing/
+    │   ├── tokenizer.c          # Lexical analysis — splits input into tokens
+    │   ├── token_cmd.c          # Builds command structures from token list
+    │   ├── expand.c             # $VAR and $? expansion
+    │   └── syntax.c             # Syntax validation before execution
+    ├── redirections/
+    │   ├── here_doc.c           # Heredoc collection and management
+    │   ├── heredoc_expand.c     # Variable expansion inside heredocs
+    │   └── in_match.c           # Wildcard pattern matching (bonus)
+    ├── signals/
+    │   ├── signal.c             # Interactive & parent process signal handlers
+    │   └── signal_2.c           # Child process & heredoc signal handlers
+    └── utils/                   # Memory cleanup, helpers, struct constructors
+```
+
+**Execution pipeline:**
+
+```
+Input string
+     │
+     ▼
+[ Tokenizer ]  ──►  token list (WORD, PIPE, REDIR, OP...)
+     │
+     ▼
+[ Parser ]     ──►  command list with redirections and args
+     │
+     ▼
+[ Expander ]   ──►  $VAR / $? substitution, quote stripping
+     │
+     ▼
+[ Executor ]   ──►  fork + execve / builtin dispatch / pipe setup
 ```
 
 ---
 
-## Technical Highlights
+## 🧮 Technical Highlights
 
-- **Zero memory leaks** in the parent process (verified with Valgrind)
-- Proper file descriptor management — no fd leaks at exit
-- Robust signal handling across interactive mode, heredocs, and child processes
-- Heredoc environment variable expansion while preserving delimiter integrity
-- Readline integration with custom signal handlers
+**Two-pass heredoc** — heredocs are collected before execution begins, so all `<<` delimiters are resolved upfront. This avoids race conditions between heredoc input and pipeline setup, and mirrors bash's actual behavior.
+
+**Signal isolation** — signal handlers are swapped between three distinct states: interactive (parent waiting for input), heredoc collection, and child execution. Each state installs a different `sigaction` configuration to match the expected bash behavior precisely.
+
+**No fd leaks** — every `dup2` is paired with a `close` and pipe ends are explicitly closed at each stage of the pipeline. File descriptor state is verified at shell exit with Valgrind's `--track-fds` option.
+
+**Wildcard expansion without `glob()`** — the `*` matcher is implemented manually using `opendir`/`readdir`, building the match list from scratch without relying on any glob library.
 
 ---
 
-## Testing
-
-Run with Valgrind to verify memory management:
+## 🧪 Testing
 
 ```bash
-valgrind --suppressions=supp.supp --leak-check=full --show-leak-kinds=all \
-         --track-fds=yes ./minishell
+# Memory leak check (parent process)
+valgrind --child-silent-after-fork=yes \
+         --suppressions=supp.supp \
+         --leak-check=full \
+         --show-leak-kinds=all \
+         --track-fds=yes \
+         ./minishell
+
+# Norm check
+norminette src/ include/
 ```
 
-For cleaner output (parent process only):
+---
 
-```bash
-valgrind --child-silent-after-fork=yes --suppressions=supp.supp \
-         --leak-check=full --track-fds=yes ./minishell
-```
+## 📚 Resources
+
+- [bash manual](https://www.gnu.org/software/bash/manual/bash.html)
+- [GNU Readline](https://tiswww.case.edu/php/chet/readline/rltop.html)
+- [`fork` / `execve` — Linux manual](https://man7.org/linux/man-pages/man2/fork.2.html)
+- [`sigaction` man page](https://man7.org/linux/man-pages/man2/sigaction.2.html)
+- [POSIX shell grammar](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html)
+
+**AI usage:** AI was used exclusively for README writing and formatting. All source code was written manually without AI assistance, in compliance with the 42 AI policy for foundational projects.
+
+---
+
+<div align="center">
+
+Made with ☕ at [42 Le Havre](https://42lehavre.fr) — **aronnet & jcrochet**
+
+</div>
